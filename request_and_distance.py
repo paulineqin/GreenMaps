@@ -8,6 +8,7 @@ headers = r.headers
 
 origin = input("What is your origin?")
 mode = input("What is your mode of transportation?")
+possibleModes = ["driving", "transit", "walking", "bicycling"]
 
 #print(repr((origin,destination)))
 origin2 = ("+".join(origin))
@@ -17,8 +18,6 @@ url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin2}&de
 
 response = requests.request("GET", url, headers=headers)
 #print(response.text)
-directions = json.loads(response.text)
-routes = directions["routes"]
 #print(response.text)
 
 #distance of legs 
@@ -37,21 +36,46 @@ def getLegDistance(directions, routeNum, legNum):
     legs = routes["legs"][legNum]
     return legs["distance"]["text"]
 
+def getSteps(directions, routeNum, legNum):
+    routeNum -=1 
+    legNum -=1 
+    routes = directions["routes"][routeNum]
+    leg = routes["legs"][legNum]
+    steps = leg["steps"]
+    return steps
+
+def checkTotalStepsDistance(steps, mode):
+    total = 0
+    mode_to_check = mode.upper()
+    for stepIndex in range(len(steps)):
+        if (steps[stepIndex]["travel_mode"] == mode_to_check):
+            total += steps[stepIndex]["distance"]["value"]
+    return total 
+
+
 
 def getDistance(routes, routeNum, legNum, stepNum):
     return routes[routeNum]["legs"][legNum]["steps"][stepNum]["distance"]
 
+def calculateDistances(steps): 
+    totalDistances = dict()
+    for mode in possibleModes: 
+        dist = checkTotalStepsDistance(steps,mode)
+        totalDistances[mode] = dist
+    return totalDistances
+    
+
 #legs = routes[0]["legs"]
 
 #firstLeg = legs[0]
-#steps = firstLeg["steps"]
 #print(getDistance(routes, 0, 0, 10))
 #print((routes[0]["legs"][0]["steps"][0]["distance"]))
 #print(type(directions["routes"]))
-print(json.dumps(directions, indent=4, sort_keys=True))
 #print(firstLeg.keys())
-#print(response.text)
-#print(directions)
-#print(directions["routes"])
+directions = json.loads(response.text)
+steps = getSteps(directions,0,0)
+totals = calculateDistances(steps)
+print(totals)
+#print(json.dumps(directions, indent=4, sort_keys=True))
 
 #print(r.headers)
