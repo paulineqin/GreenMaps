@@ -12,5 +12,5 @@ def hello_world_2():
 @app.route('/page3')
 def hello_world_3():
 	f = open("Home.html", "r")
-	contents = f.read
+	contents = f.read()
 	return contents
